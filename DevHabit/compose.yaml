@@ -1,0 +1,40 @@
+﻿services:
+  devhabit.api:
+    image: ${DOCKER_REGISTRY-}devhabitapi
+    build:
+      context: .
+      dockerfile: DevHabit.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+#      - ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/Bookify.Api.pfx
+#      - ASPNETCORE_Kestrel__Certificates__Default__Password=
+      #Seq
+#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.seq:5341/ingest/otlp
+#      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      #Aspire
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.aspire-dashbord:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+    ports:
+      - "5000:8080"
+#      - "5001:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  
+  devhabit.seq:
+    image: datalust/seq:2024.3
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - ./.containers/seq_data:/data
+    ports:
+      - "8080:80"
+      - "5341:5341"
+  
+  devhabit.aspire-dashbord:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
+    ports:
+      - "18888:18888"
